@@ -2,6 +2,7 @@ const {Cc, Ci, Cu, Cr, Cm, components} = require("chrome");
 var self = require("sdk/self");
 var { setTimeout } = require("sdk/timers");
 
+var prefsvc = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService);
 
 // Set the delay to update the logs
 var REPEAT_SECONDS = 1;
@@ -16,15 +17,32 @@ var PR_TRUNCATE = 0x20;
 var PR_SYNC = 0x40;
 var PR_EXCL = 0x80;
 
+/*
+ * Ok, this is probably a terrible idea - but we're just going to nab
+ * the user ID out of the sync preferences under the 
+ * 'services.sync.account' pref. That ought to give us the user's
+ * email address.
+ *
+ * If no email address can be found, return an empty string.
+ */
+function getSyncUser() {
+    try {
+        var sync_prefs = prefsvc.getBranch("services.sync.");
+        return sync_prefs.getCharPref('account');
+    } catch (err) {
+        return '';
+    }
+}
+
 // Converts PlacesDB lastAccessTime timestamps from microseconds
 // to milliseconds
 function uSecToMS(tstamp) {
     return tstamp / 1000000;
 }
 
-// a dummy function, to show how tests work.
+// a main_loop function, to show how tests work.
 // to see how to test this function, look at test/test-index.js
-function dummy() {
+function main_loop() {
     var historyComponent = Cc["@mozilla.org/browser/nav-history-service;1"];
     var historyService = historyComponent.getService(Ci.nsINavHistoryService);
 
@@ -77,7 +95,7 @@ function dummy() {
 
 
     setTimeout(function() {
-        dummy();
+        main_loop();
     }, REPEAT_DELAY);
 }
 
@@ -155,7 +173,14 @@ function serializeData(data) {
     writeCheckPoint(data);
 }
 
-dummy();
+main_loop();
 
-console.log("============== dummy worked!");
-exports.dummy = dummy;
+console.log("============== main_loop worked!");
+exports.main_loop = main_loop;
+exports.onUnload = function (reason) {
+    console.log("cg_slurp is unloading because: ["+reason+"]");
+    if (reason == 'shutdown') {
+        // TODO: flush everything to disk so we don't lose data
+    }
+};
+
