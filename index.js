@@ -1,8 +1,10 @@
 const {Cc, Ci, Cu, Cr, Cm, components} = require("chrome");
 var self = require("sdk/self");
 var { setTimeout } = require("sdk/timers");
+Cu.import("resource://gre/modules/Http.jsm", this);
 
 var prefsvc = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService);
+var simple_prefs = require("sdk/simple-prefs");
 
 // Set the delay to update the logs
 var REPEAT_SECONDS = 1;
@@ -17,6 +19,17 @@ var PR_TRUNCATE = 0x20;
 var PR_SYNC = 0x40;
 var PR_EXCL = 0x80;
 
+var HISTORY_RECORDS = {}; 
+var BEGIN_TIME_uSec = 0;
+
+/* Any checkpoint timestamp is always going to be in milliseconds
+ * since epoch unless the variable name explicitly has uSec in the
+ * name, in which case - it's going to be microseconds since epoch.
+ *
+ * Some JS APIs expect to be using uSeconds instead of milliseconds.
+ */
+var MEM_CHECKPOINT = 0;
+
 /*
  * Ok, this is probably a terrible idea - but we're just going to nab
  * the user ID out of the sync preferences under the 
@@ -25,13 +38,16 @@ var PR_EXCL = 0x80;
  *
  * If no email address can be found, return an empty string.
  */
-function getSyncUser() {
-    try {
-        var sync_prefs = prefsvc.getBranch("services.sync.");
-        return sync_prefs.getCharPref('account');
-    } catch (err) {
-        return '';
+function getUUID() {
+    var uuid = simple_prefs.prefs.cg_slurp_uuid;
+    if (uuid == undefined) {
+        // Generate a UUID if we don't have a user ID yet and
+        // stuff it into prefs
+        var uuidgen = cc["@mozilla.org/uuid-generator;1"].getservice(ci.nsiuuidgenerator);
+        uuid = uuidgen.generateuuid();
+        simple_prefs.prefs.cg_slurp_uuid = uuid;
     }
+    return uuid;
 }
 
 // Converts PlacesDB lastAccessTime timestamps from microseconds
@@ -52,14 +68,24 @@ function main_loop() {
     // which is nsINavHistoryQueryOptions.SORT_BY_NONE.
     var options = historyService.getNewQueryOptions();
 
-
     // No query parameters will return everything
     var query = historyService.getNewQuery();
     query.beginTimeReference = query.TIME_RELATIVE_EPOCH;
 
-    // TODO: modify NUM_DAYS to use the last checkpoint date
-    // if it exists
-    query.beginTime = 24*60*60*1000000*(NUM_DAYS);
+    BEGIN_TIME_uSec = MEM_CHECKPOINT * 1000;
+    var diskCheckPoint = 0;
+
+    // Use in-memory checkpoint if available,
+    // disk based checkpoint next, otherwise - fallback to a default
+    // of NUM_DAYS amount of user history.
+    if (BEGIN_TIME_uSec === 0) {
+        diskCheckPoint = loadCheckPoint();
+        BEGIN_TIME_uSec = diskCheckPoint;
+    }
+    if (BEGIN_TIME_uSec === 0) {
+        BEGIN_TIME_uSec = 24*60*60*1000000*(NUM_DAYS);
+    }
+    query.beginTime = BEGIN_TIME_uSec;
 
     // execute the query
     var historyResult = historyService.executeQuery(query, options);
@@ -67,29 +93,33 @@ function main_loop() {
     var root = historyResult.root;
     root.containerOpen = true;
 
-    var lastCheckPoint = loadCheckPoint();
-
     // Iterate over the results
-    var records = [];
     for (let i = 0; i < root.childCount; i++) {
         let node = root.getChild(i);
         let uri = node.uri;
         let title = node.title;
         let icon = node.icon;
         let lastAccessTime = uSecToMS(node.time);
+        let date = new Date(lastAccessTime*1000);
         let node_type = node.type; // I think we only want type 2 RESULT_TYPE_FULL_VISIT
 
         var jBlob = {'lastAccessTime': lastAccessTime,
                      'uri': uri,
+                     'date': date,
                      'title': title};
-        // TODO: skip records which are older than our checkpoint
-        if (jBlob.lastAccessTime > lastCheckPoint) {
-            records.push(jBlob);
-            console.log("Journalling: ["+jBlob.uri+"]");
+        // TODO: skip HISTORY_RECORDS which are older than our checkpoint
+        if (HISTORY_RECORDS[jBlob.uri] == undefined) {
+            // Annoying.  We don't seem to handle redirects very well.
+            console.log("Appending: ["+jBlob.uri+"]");
+            HISTORY_RECORDS[jBlob.uri] = jBlob;
         }
+        MEM_CHECKPOINT = jBlob.lastAccessTime;
+
+        // We should only append if we don't have it in the current
+        // history data that is pending.
     }
-    if (records.length > 0) {
-        serializeData(records);
+    if (HISTORY_RECORDS.length > 200) {
+        flushData();
     }
     root.containerOpen = false;
 
@@ -105,9 +135,9 @@ function main_loop() {
  * Write out the lastAccessTime in milliseconds since epoch
  * to the cg_slurp.checkpoint file.
  */
-function writeCheckPoint(records) {
+function writeCheckPoint() {
     let newCheckPoint = 0;
-    for each (var item in records) {
+    for each (var item in HISTORY_RECORDS) {
         let normItemTS = item.lastAccessTime;
         if (newCheckPoint < normItemTS) {
             newCheckPoint = normItemTS;
@@ -158,9 +188,25 @@ function loadCheckPoint() {
 
 }
 
-function serializeData(data) {
-    var jsonString = JSON.stringify(data);
-    var filename = "cg_slurp.history.json";
+function dateStamp(d) {
+    function pad(n) {return n<10 ? '0'+n : n}
+    return d.getUTCFullYear()+
+         + pad(d.getUTCMonth()+1)+
+         + pad(d.getUTCDate())+'T'
+         + pad(d.getUTCHours())+
+         + pad(d.getUTCMinutes())+
+         + pad(d.getUTCSeconds())+'Z'
+}
+
+function flushData() {
+    var blob_list = Object.values(HISTORY_RECORDS);
+    blob_list.sort(function(a, b) { 
+        return a.lastAccessTime - b.lastAccessTime;
+    });
+
+    var jsonString = JSON.stringify(blob_list);
+    let stamp = dateStamp(blob_list[blob_list.length-1].date);
+    var filename = "cg_slurp.history_"+stamp+".json";
     var file = Cc["@mozilla.org/file/directory_service;1"].getService(Ci.nsIProperties).get("ProfD", Ci.nsIFile);
     file.append(filename);
     var fs = Cc["@mozilla.org/network/file-output-stream;1"].createInstance(Ci.nsIFileOutputStream);
@@ -170,7 +216,14 @@ function serializeData(data) {
     // Force a new line
     fs.write("\n", 1);
     fs.close();
-    writeCheckPoint(data);
+    writeCheckPoint();
+    HISTORY_RECORDS = {};
+}
+
+/*
+ */
+function uploadData() {
+	console.log(httpRequest);
 }
 
 main_loop();
