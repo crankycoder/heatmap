@@ -22,6 +22,9 @@ var PR_EXCL = 0x80;
 var HISTORY_RECORDS = {}; 
 var BEGIN_TIME_uSec = 0;
 
+// Maximum number of records before we flush to disk
+var FLUSH_SIZE = 10;
+
 /* Any checkpoint timestamp is always going to be in milliseconds
  * since epoch unless the variable name explicitly has uSec in the
  * name, in which case - it's going to be microseconds since epoch.
@@ -40,14 +43,38 @@ var MEM_CHECKPOINT = 0;
  */
 function getUUID() {
     var uuid = simple_prefs.prefs.cg_slurp_uuid;
-    if (uuid == undefined) {
+    if (uuid === undefined) {
         // Generate a UUID if we don't have a user ID yet and
         // stuff it into prefs
-        var uuidgen = cc["@mozilla.org/uuid-generator;1"].getservice(ci.nsiuuidgenerator);
-        uuid = uuidgen.generateuuid();
+        uuid = makeGUID();
         simple_prefs.prefs.cg_slurp_uuid = uuid;
     }
     return uuid;
+}
+
+function makeGUID() {
+    // 70 characters that are not-escaped URL-friendly
+    const code =
+        "!()*-.0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz~";
+
+        let guid = "";
+        let num = 0;
+        let val;
+
+        // Generate ten 70-value characters for a 70^10 (~61.29-bit) GUID
+        for (let i = 0; i < 10; i++) {
+            // Refresh the number source after using it a few times
+            if (i == 0 || i == 5)
+                num = Math.random();
+
+            // Figure out which code to use for the next GUID character
+            num *= 70;
+            val = Math.floor(num);
+            guid += code[val];
+            num -= val;
+        }
+
+        return guid;
 }
 
 // Converts PlacesDB lastAccessTime timestamps from microseconds
@@ -107,8 +134,9 @@ function main_loop() {
                      'uri': uri,
                      'date': date,
                      'title': title};
+                     
         // TODO: skip HISTORY_RECORDS which are older than our checkpoint
-        if (HISTORY_RECORDS[jBlob.uri] == undefined) {
+        if (HISTORY_RECORDS[jBlob.uri] === undefined) {
             // Annoying.  We don't seem to handle redirects very well.
             console.log("Appending: ["+jBlob.uri+"]");
             HISTORY_RECORDS[jBlob.uri] = jBlob;
@@ -118,7 +146,7 @@ function main_loop() {
         // We should only append if we don't have it in the current
         // history data that is pending.
     }
-    if (HISTORY_RECORDS.length > 200) {
+    if (HISTORY_RECORDS.length > FLUSH_SIZE) {
         flushData();
     }
     root.containerOpen = false;
