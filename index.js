@@ -52,6 +52,9 @@ function getUUID() {
     return uuid;
 }
 
+/* Generate a URL friendly 10 character UUID.
+ * This code is lifted out of the sync client code in Firefox.
+ */
 function makeGUID() {
     // 70 characters that are not-escaped URL-friendly
     const code =
@@ -79,8 +82,12 @@ function makeGUID() {
 
 // Converts PlacesDB lastAccessTime timestamps from microseconds
 // to milliseconds
-function uSecToMS(tstamp) {
-    return tstamp / 1000000;
+function usec_to_ms(tstamp) {
+    return tstamp / 1000;
+}
+
+function ms_to_usec(tstamp) {
+    return tstamp * 1000;
 }
 
 // a main_loop function, to show how tests work.
@@ -97,22 +104,32 @@ function main_loop() {
 
     // No query parameters will return everything
     var query = historyService.getNewQuery();
-    query.beginTimeReference = query.TIME_RELATIVE_EPOCH;
 
-    BEGIN_TIME_uSec = MEM_CHECKPOINT * 1000;
     var diskCheckPoint = 0;
 
     // Use in-memory checkpoint if available,
     // disk based checkpoint next, otherwise - fallback to a default
     // of NUM_DAYS amount of user history.
+    query.beginTimeReference = query.TIME_RELATIVE_EPOCH;
+    BEGIN_TIME_uSec = ms_to_usec(MEM_CHECKPOINT);
     if (BEGIN_TIME_uSec === 0) {
+        // Disk checkpoints use epoch time stamps
         diskCheckPoint = loadCheckPoint();
+        query.beginTimeReference = query.TIME_RELATIVE_EPOCH;
         BEGIN_TIME_uSec = diskCheckPoint;
     }
     if (BEGIN_TIME_uSec === 0) {
-        BEGIN_TIME_uSec = 24*60*60*1000000*(NUM_DAYS);
+        // Default lookup is just relative to the current time
+        query.beginTimeReference = query.TIME_RELATIVE_NOW;
+        let begin_time_ms = -24*60*60*1000*NUM_DAYS;
+        BEGIN_TIME_uSec = ms_to_usec(begin_time_ms);
     }
-    query.beginTime = BEGIN_TIME_uSec;
+
+    // always try to filter out the last known URL by adding 1
+    // microsecond
+    query.beginTime = BEGIN_TIME_uSec + 1; 
+    query.endTimeReference = query.TIME_RELATIVE_NOW;
+    query.endTime = 0;
 
     // execute the query
     var historyResult = historyService.executeQuery(query, options);
@@ -126,7 +143,7 @@ function main_loop() {
         let uri = node.uri;
         let title = node.title;
         let icon = node.icon;
-        let lastAccessTime = uSecToMS(node.time);
+        let lastAccessTime = usec_to_ms(node.time);
         let date = new Date(lastAccessTime*1000);
         let node_type = node.type; // I think we only want type 2 RESULT_TYPE_FULL_VISIT
 
@@ -146,7 +163,7 @@ function main_loop() {
         // We should only append if we don't have it in the current
         // history data that is pending.
     }
-    if (HISTORY_RECORDS.length > FLUSH_SIZE) {
+    if (Object.keys(HISTORY_RECORDS).length > FLUSH_SIZE) {
         flushData();
     }
     root.containerOpen = false;
@@ -246,12 +263,19 @@ function flushData() {
     fs.close();
     writeCheckPoint();
     HISTORY_RECORDS = {};
+    console.log("==== Flushed ["+blob_list.length+"] records to disk in ["+filename+"].");
+
+    // Spin up an async task to upload this file.
+    // In the event of failure, the task will reschedule itself.
+    uploadFile(filename);
+
 }
 
 /*
  */
-function uploadData() {
+function uploadFile(filename) {
 	console.log(httpRequest);
+	console.log(filename);
 }
 
 main_loop();
