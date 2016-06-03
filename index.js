@@ -310,19 +310,14 @@ function writeStringToFile(short_filename, data) {
     uploadFile(short_filename, 0);
 }
 
-/*
- * Load JSON file from the Profile directory
- */
-function loadHistoryJSON(path, filename) {
-    return readStringFromFile(path, filename);
-}
 
 /*
  */
 function uploadFile(short_filename, uploadAttempt) {
 
+    console.log("uploadFile invoked!");
     var file = Cc["@mozilla.org/file/directory_service;1"].getService(Ci.nsIProperties).get("ProfD", Ci.nsIFile);
-    var data = loadHistoryJSON(file, short_filename);
+    var data = readStringFromFile(short_filename);
     var headers = [['Content-Type', "application/json"],
                   ['X-User', getUUID()]];
 
