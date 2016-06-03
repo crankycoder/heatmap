@@ -318,30 +318,22 @@ function uploadFile(short_filename, uploadAttempt) {
     console.log("uploadFile invoked!");
     var file = Cc["@mozilla.org/file/directory_service;1"].getService(Ci.nsIProperties).get("ProfD", Ci.nsIFile);
     var data = readStringFromFile(short_filename);
-    var headers = [['Content-Type', "application/json"],
-                  ['X-User', getUUID()]];
+    var headers = {'X-User': getUUID()};
 
     var Request = require("sdk/request").Request;
+
     var latestTweetRequest = Request({
-      url: "https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name=mozhacks&count=1",
+      url: UPLOAD_URL,
+      headers: headers,
+      content: data,
+      overrideMimeType: 'application/json',
       onComplete: function (response) {
-        var tweet = response.json[0];
-        console.log("User: " + tweet.user.screen_name);
-        console.log("Tweet: " + tweet.text);
+          console.log("Got response: ["+response+"]");
       }
     });
 
     // Be a good consumer and check for rate limiting before doing more.
-    Request({
-      url: "https://api.twitter.com/1.1/application/rate_limit_status.json",
-      onComplete: function (response) {
-        if (response.json.remaining_hits) {
-          latestTweetRequest.get();
-        } else {
-          console.log("You have been rate limited!");
-        }
-      }
-    }).get();
+    latestTweetRequest.get();
     console.log("upload is done!");
 }
 
