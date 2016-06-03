@@ -3,6 +3,17 @@ var self = require("sdk/self");
 var { setTimeout } = require("sdk/timers");
 Cu.import("resource://gre/modules/Http.jsm", this);
 
+// Blargh. We need NetUtil.jsm to read inputstreams into strings.
+// Not actually networking. at all.
+Cu.import("resource://gre/modules/NetUtil.jsm");
+
+// FileUtils makes dealing with the profile directory easier
+Cu.import("resource://gre/modules/FileUtils.jsm");
+
+// Use async tasks for uploading data
+Cu.import("resource://gre/modules/DeferredTask.jsm");
+
+
 var prefsvc = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService);
 var simple_prefs = require("sdk/simple-prefs");
 
@@ -23,7 +34,14 @@ var HISTORY_RECORDS = {};
 var BEGIN_TIME_uSec = 0;
 
 // Maximum number of records before we flush to disk
-var FLUSH_SIZE = 10;
+var FLUSH_SIZE = 1;
+
+
+var UPLOAD_URL = 'https://contextgraph.dev.mozaws.net/v1/upload';
+
+// On 3 server side errors, just discard the file and give up.
+var MAX_SERVER_ERR = 3;
+var RETRY_DELAY_SEC = 1;
 
 /* Any checkpoint timestamp is always going to be in milliseconds
  * since epoch unless the variable name explicitly has uSec in the
@@ -138,6 +156,7 @@ function main_loop() {
     root.containerOpen = true;
 
     // Iterate over the results
+    console.log("Found : " + root.childCount + " results in history.");
     for (let i = 0; i < root.childCount; i++) {
         let node = root.getChild(i);
         let uri = node.uri;
@@ -168,7 +187,6 @@ function main_loop() {
     }
     root.containerOpen = false;
 
-
     setTimeout(function() {
         main_loop();
     }, REPEAT_DELAY);
@@ -181,6 +199,8 @@ function main_loop() {
  * to the cg_slurp.checkpoint file.
  */
 function writeCheckPoint() {
+    // TODO: rewrite this to use FileUtils instead of the 
+    // XPCOM components for file i/o
     let newCheckPoint = 0;
     for each (var item in HISTORY_RECORDS) {
         let normItemTS = item.lastAccessTime;
@@ -194,14 +214,13 @@ function writeCheckPoint() {
         var checkPoint = {};
         checkPoint.checkPoint = newCheckPoint;
         var checkPointJSON = JSON.stringify(checkPoint);
-        var filename = "cg_slurp.checkpoint";
-        var file = Cc["@mozilla.org/file/directory_service;1"].getService(Ci.nsIProperties).get("ProfD", Ci.nsIFile);
-        file.append(filename);
-        var fs = Cc["@mozilla.org/network/file-output-stream;1"].createInstance(Ci.nsIFileOutputStream);
-        fs.init(file, PR_WRONLY | PR_CREATE_FILE | PR_TRUNCATE, 0664, 0); // write only, create, truncate
-        fs.write(checkPointJSON, checkPointJSON.length);
-        fs.close();
-        console.log("Wrote out ["+checkPointJSON+"] checkpoint to "+ filename);
+
+        var short_filename = "cg_slurp.checkpoint";
+        var profileDir = FileUtils.getFile("ProfD", []);
+
+        writeStringToFile(short_filename, checkPointJSON);
+
+        console.log("Wrote out ["+checkPointJSON+"] checkpoint to "+ profileDir.path + "/" + short_filename);
     }
 }
 
@@ -221,16 +240,13 @@ function loadCheckPoint() {
     }
     var istream = Cc["@mozilla.org/network/file-input-stream;1"].createInstance(Ci.nsIFileInputStream);
     istream.init(file, PR_RDONLY, 0444, 0);
-    istream.QueryInterface(Ci.nsILineInputStream);
 
-    let line = {};
-    istream.readLine(line);
+    var value = NetUtil.readInputStreamToString(istream, 
+                                                istream.available());
 
-    let value = line.value;
     let parsedValue = JSON.parse(value);
     istream.close();
     return parsedValue.checkPoint;
-
 }
 
 function dateStamp(d) {
@@ -250,32 +266,88 @@ function flushData() {
     });
 
     var jsonString = JSON.stringify(blob_list);
-    let stamp = dateStamp(blob_list[blob_list.length-1].date);
-    var filename = "cg_slurp.history_"+stamp+".json";
-    var file = Cc["@mozilla.org/file/directory_service;1"].getService(Ci.nsIProperties).get("ProfD", Ci.nsIFile);
-    file.append(filename);
-    var fs = Cc["@mozilla.org/network/file-output-stream;1"].createInstance(Ci.nsIFileOutputStream);
-    fs.init(file, PR_WRONLY | PR_CREATE_FILE | PR_APPEND, 0664, 0); // write only, create, append
-    fs.write(jsonString, jsonString.length);
+    var latest_item = blob_list[blob_list.length-1];
+    let stamp = dateStamp(latest_item.date);
 
-    // Force a new line
-    fs.write("\n", 1);
-    fs.close();
+    var short_filename = "cg_slurp.history_"+stamp+".json";
+    var profileDir = FileUtils.getFile("ProfD", []);
+    writeStringToFile(short_filename, jsonString);
     writeCheckPoint();
     HISTORY_RECORDS = {};
-    console.log("==== Flushed ["+blob_list.length+"] records to disk in ["+filename+"].");
+
+
+}
+
+function readStringFromFile(short_filename) {
+
+    var file = Cc["@mozilla.org/file/directory_service;1"].getService(Ci.nsIProperties).get("ProfD", Ci.nsIFile);
+
+    file.append(short_filename);
+
+    if (!file.exists()) {
+        return null;
+    }
+    var stream = Cc["@mozilla.org/network/file-input-stream;1"].createInstance(Ci.nsIFileInputStream);
+    stream.init(file, PR_RDONLY, 0444, 0);
+
+    var value = NetUtil.readInputStreamToString(stream, 
+                                                stream.available());
+    stream.close();
+    return value;
+}
+
+function writeStringToFile(short_filename, data) {
+    var file = Cc["@mozilla.org/file/directory_service;1"].getService(Ci.nsIProperties).get("ProfD", Ci.nsIFile);
+    file.append(short_filename);
+    var fs = Cc["@mozilla.org/network/file-output-stream;1"].createInstance(Ci.nsIFileOutputStream);
+    fs.init(file, PR_WRONLY | PR_CREATE_FILE | PR_TRUNCATE, 0664, 0); // write only, create, truncate
+    fs.write(data, data.length);
+    fs.close();
+
+    console.log("==== Flushed ["+data.length+"] records to disk in ["+file+"].");
 
     // Spin up an async task to upload this file.
-    // In the event of failure, the task will reschedule itself.
-    uploadFile(filename);
+    uploadFile(short_filename, 0);
+}
 
+/*
+ * Load JSON file from the Profile directory
+ */
+function loadHistoryJSON(path, filename) {
+    return readStringFromFile(path, filename);
 }
 
 /*
  */
-function uploadFile(filename) {
-	console.log(httpRequest);
-	console.log(filename);
+function uploadFile(short_filename, uploadAttempt) {
+
+    var file = Cc["@mozilla.org/file/directory_service;1"].getService(Ci.nsIProperties).get("ProfD", Ci.nsIFile);
+    var data = loadHistoryJSON(file, short_filename);
+    var headers = [['Content-Type', "application/json"],
+                  ['X-User', getUUID()]];
+
+    var Request = require("sdk/request").Request;
+    var latestTweetRequest = Request({
+      url: "https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name=mozhacks&count=1",
+      onComplete: function (response) {
+        var tweet = response.json[0];
+        console.log("User: " + tweet.user.screen_name);
+        console.log("Tweet: " + tweet.text);
+      }
+    });
+
+    // Be a good consumer and check for rate limiting before doing more.
+    Request({
+      url: "https://api.twitter.com/1.1/application/rate_limit_status.json",
+      onComplete: function (response) {
+        if (response.json.remaining_hits) {
+          latestTweetRequest.get();
+        } else {
+          console.log("You have been rate limited!");
+        }
+      }
+    }).get();
+    console.log("upload is done!");
 }
 
 main_loop();
