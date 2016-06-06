@@ -13,7 +13,6 @@ Cu.import("resource://gre/modules/FileUtils.jsm");
 // Use async tasks for uploading data
 Cu.import("resource://gre/modules/DeferredTask.jsm");
 
-
 var prefsvc = Cc["@mozilla.org/preferences-service;1"].getService(Ci.nsIPrefService);
 var simple_prefs = require("sdk/simple-prefs");
 
@@ -322,18 +321,24 @@ function uploadFile(short_filename, uploadAttempt) {
 
     var Request = require("sdk/request").Request;
 
+    console.log("Posting with data : " + data);
     var latestTweetRequest = Request({
       url: UPLOAD_URL,
       headers: headers,
       content: data,
       overrideMimeType: 'application/json',
       onComplete: function (response) {
-          console.log("Got response: ["+response+"]");
+          console.log("Got response status: ["+response.status+"]");
+          console.log("Got response status: ["+response.statusText+"]");
+          for (var headerName in response.headers) {
+              console.log(headerName + ":" + response.headers[headerName]);
+          }
+          console.log("Got response text: ["+response.text+"]");
       }
     });
 
     // Be a good consumer and check for rate limiting before doing more.
-    latestTweetRequest.get();
+    latestTweetRequest.post();
     console.log("upload is done!");
 }
 
