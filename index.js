@@ -36,7 +36,7 @@ var BEGIN_TIME_uSec = 0;
 var FLUSH_SIZE = 1;
 
 
-var UPLOAD_URL = 'https://contextgraph.dev.mozaws.net/v1/upload';
+var UPLOAD_URL = 'https://contextgraph.stage.mozaws.net/'
 
 // On 3 server side errors, just discard the file and give up.
 var MAX_SERVER_ERR = 3;
