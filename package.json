@@ -1,5 +1,5 @@
 {
-  "title": "Context Graph Addon",
+  "title": "Context Graph Data Ingestion",
   "name": "cgslurp",
   "version": "0.0.2",
   "description": "A basic add-on",
@@ -10,6 +10,13 @@
     "fennec": ">=38.0a1"
   },
   "license": "MIT",
+  "preferences": [{
+      "name": "tokenBlacklist",
+      "title": "URL Keyword Blacklist",
+      "description": "Keywords which will be used to filter out URLs.  Multiple keywords can be split by commas",
+      "type": "string",
+      "value": ""
+  }],
   "keywords": [
     "jetpack"
   ]
