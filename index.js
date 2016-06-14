@@ -59,12 +59,12 @@ var MEM_CHECKPOINT = 0;
  * If no email address can be found, return an empty string.
  */
 function getUUID() {
-    var uuid = simple_prefs.prefs.cg_slurp_uuid;
+    var uuid = simple_prefs.prefs.cg_ingest_uuid;
     if (uuid === undefined) {
         // Generate a UUID if we don't have a user ID yet and
         // stuff it into prefs
         uuid = makeGUID();
-        simple_prefs.prefs.cg_slurp_uuid = uuid;
+        simple_prefs.prefs.cg_ingest_uuid = uuid;
     }
     return uuid;
 }
@@ -195,7 +195,7 @@ function main_loop() {
  * Given a Javascript array of JSON objects, iterate
  * over all objects and find the greatest lastAccessTime.
  * Write out the lastAccessTime in milliseconds since epoch
- * to the cg_slurp.checkpoint file.
+ * to the cg_ingest.checkpoint file.
  */
 function writeCheckPoint() {
     // TODO: rewrite this to use FileUtils instead of the 
@@ -214,7 +214,7 @@ function writeCheckPoint() {
         checkPoint.checkPoint = newCheckPoint;
         var checkPointJSON = JSON.stringify(checkPoint);
 
-        var short_filename = "cg_slurp.checkpoint";
+        var short_filename = "cg_ingest.checkpoint";
         var profileDir = FileUtils.getFile("ProfD", []);
 
         writeStringToFile(short_filename, checkPointJSON);
@@ -229,7 +229,7 @@ function writeCheckPoint() {
  * If no checkpoint exists, return 0.
  */
 function loadCheckPoint() {
-    var filename = "cg_slurp.checkpoint";
+    var filename = "cg_ingest.checkpoint";
 
     var file = Cc["@mozilla.org/file/directory_service;1"].getService(Ci.nsIProperties).get("ProfD", Ci.nsIFile);
 
@@ -268,7 +268,7 @@ function flushData() {
     var latest_item = blob_list[blob_list.length-1];
     let stamp = dateStamp(latest_item.date);
 
-    var short_filename = "cg_slurp.history_"+stamp+".json";
+    var short_filename = "cg_ingest.history_"+stamp+".json";
     var profileDir = FileUtils.getFile("ProfD", []);
     writeStringToFile(short_filename, jsonString);
     writeCheckPoint();
@@ -347,7 +347,7 @@ main_loop();
 console.log("============== main_loop worked!");
 exports.main_loop = main_loop;
 exports.onUnload = function (reason) {
-    console.log("cg_slurp is unloading because: ["+reason+"]");
+    console.log("cg_ingest is unloading because: ["+reason+"]");
     if (reason == 'shutdown') {
         // TODO: flush everything to disk so we don't lose data
     }
