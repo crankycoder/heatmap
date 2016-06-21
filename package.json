@@ -1,8 +1,8 @@
 {
-  "title": "Context Graph Data Ingestion",
-  "name": "cgslurp",
+  "title": "Context Graph Data Ingestion: Heatmap",
+  "name": "heatmap",
   "version": "0.0.2",
-  "description": "A basic add-on",
+  "description": "Capture browser events for the Context Graph",
   "main": "index.js",
   "author": "",
   "engines": {
