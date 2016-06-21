@@ -4,6 +4,7 @@
 
 var pageMod = require("sdk/page-mod");
 var self = require("sdk/self");
+var libheatmap = require("./lib/heatmap");
 
 
 function main_func(options, callbacks) {
@@ -18,6 +19,9 @@ function main_func(options, callbacks) {
             worker.port.on("heatmap_event", function(addonMessage) {
                 console.log("Addon received message: ["+addonMessage+"]");
             });
+            
+            // TODO: spin up the history reader
+            libheatmap.main_loop();
         }
     });
 
