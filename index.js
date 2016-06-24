@@ -1,10 +1,15 @@
+"use strict";
+
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 var pageMod = require("sdk/page-mod");
 var self = require("sdk/self");
+
 var libheatmap = require("./lib/heatmap");
+var libnetworking = require("./lib/network");
+var libdomwatch = require("./lib/domwatch");
 
 
 function main_func(options, callbacks) {
@@ -21,7 +26,7 @@ function main_func(options, callbacks) {
             });
             
             // TODO: spin up the history reader
-            libheatmap.main_loop();
+            libheatmap.main();
         }
     });
 
