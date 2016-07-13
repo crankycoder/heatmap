@@ -10,7 +10,10 @@ var self = require("sdk/self");
 var libheatmap = require("./lib/heatmap");
 var libnetworking = require("./lib/network");
 var libdomwatch = require("./lib/domwatch");
+var libTabTracker = require("./lib/TabTracker");
 
+// We only want a single tab tracker instance globally
+var tabTracker = new libTabTracker.TabTracker();
 
 function main_func(options, callbacks) {
     var page = pageMod.PageMod({
