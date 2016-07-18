@@ -30,13 +30,12 @@ title
     The web page title.
 
 
-```json
+.. code-block:: javascript
 
-    {'lastAccessTime': 1468616293,
-     'uri': 'http://www.google.com/',
-     'title': site_title}
+    {"lastAccessTime": 1468616293,
+     "uri": "http://www.google.com/",
+     "title": site_title}
 
-```
 
 A session is defined as the time that a page has been open for.
 
@@ -56,17 +55,18 @@ tab_id
 session_duration
     The duration that the webpage was open for in milliseconds.
 
-```json
+.. code-block:: javascript
 
     {"url" : "http://some.website.com/and/the/url",
      "tab_id" : "-31-2",
      "session_duration": 2432}
 
-```
 
 The combined JSON blob looks like this:
 
-```json
+
+.. code-block:: javascript
+
     {"history" : [{"lastAccessTime": 1468616293,
                    "uri": "http://www.apple.com/",
                    "title": "Apple"},
@@ -79,4 +79,4 @@ The combined JSON blob looks like this:
                   {"url" : "http://foo.website.com/and/the/url",
                    "tab_id" : "-31-1",
                    "session_duration" : 4432}]}
-```
+
