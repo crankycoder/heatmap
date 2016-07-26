@@ -14,28 +14,8 @@ var libTabTracker = require("./lib/TabTracker");
 
 // We only want a single tab tracker instance globally
 var tabTracker = new libTabTracker.TabTracker();
+libheatmap.main();
 
-function main_func(options, callbacks) {
-    var page = pageMod.PageMod({
-        include: "*",
-        contentScriptWhen: "start",
-        contentScriptFile: [self.data.url("content-bridge.js")],
-        contentScriptOptions: {
-            showOptions: true
-        },
-        onAttach: function(worker) {
-            worker.port.on("heatmap_event", function(addonMessage) {
-                console.log("Addon received message: ["+addonMessage+"]");
-            });
-            
-            // TODO: spin up the history reader
-            libheatmap.main();
-        }
-    });
-
-    console.log("main_func was evaluated");
-
-}
 
 
 exports.onUnload = function (reason) {
@@ -47,4 +27,4 @@ exports.onUnload = function (reason) {
     }
 };
 
-exports.main = main_func;
+//exports.main = main_func;
