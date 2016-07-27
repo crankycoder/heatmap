@@ -16,15 +16,17 @@ var simple_prefs = require("sdk/simple-prefs");
 // Register an update listener
 function onPrefChange(prefName) {
     console.log("The preference " + prefName + " value has changed!");
-    console.log("New pref value: [" + simple_prefs.prefs[prefName] + "]");
-    // TODO: invoke libheatmap.updatePrefs
+    let newPrefVal = simple_prefs.prefs[prefName];
+    console.log("New pref value: [" + newPrefVal + "]");
+    // TODO: change this to user Services.notifyObservers
+    libheatmap.updatePrefs(newPrefVal);
 }
 
 // We only want a single tab tracker instance globally
 var tabTracker = new libTabTracker.TabTracker();
 libheatmap.main();
 
-simple_prefs.on("tokenBlacklist", onPrefChange);
+simple_prefs.on("black_list", onPrefChange);
 
 exports.onUnload = function (reason) {
     // Valid reasons are: install, enable, startup, upgrade, downgrade

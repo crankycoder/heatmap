@@ -11,7 +11,7 @@
   },
   "license": "MIT",
   "preferences": [{
-      "name": "tokenBlacklist",
+      "name": "black_list",
       "title": "URL Keyword Blacklist",
       "description": "Keywords which will be used to filter out URLs.  Multiple keywords can be split by commas",
       "type": "string",
