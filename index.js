@@ -32,7 +32,15 @@ exports.onUnload = function (reason) {
     // Valid reasons are: install, enable, startup, upgrade, downgrade
     //
     console.log("heatmap is unloading because: ["+reason+"]");
+    if (reason == 'uninstall') {
+        // TODO: check this reason and invoke the user delete
+        // operation
+
+        return;
+    }
+
     if (reason == 'shutdown') {
         // TODO: flush everything to disk so we don't lose data
     }
+
 };
