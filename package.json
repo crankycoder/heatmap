@@ -10,13 +10,16 @@
     "fennec": ">=38.0a1"
   },
   "license": "MIT",
-  "preferences": [{
-      "name": "black_list",
-      "title": "URL Keyword Blacklist",
-      "description": "Keywords which will be used to filter out URLs.  Multiple keywords can be split by commas",
-      "type": "string",
-      "value": ""
-  }],
+  "preferences": [
+      {"name": "black_list",
+       "title": "URL Keyword Blacklist",
+       "description": "Keywords which will be used to filter out URLs.  Multiple keywords can be split by commas",
+       "type": "string",
+       "value": ""},
+      {"type": "control",
+       "label": "Delete",
+       "name": "deleteData",
+       "title": "Delete all heatmap data from server"}],
   "keywords": [
     "jetpack"
   ]
