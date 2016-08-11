@@ -4,6 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+console.log("addon is starting");
 var pageMod = require("sdk/page-mod");
 var self = require("sdk/self");
 
@@ -12,6 +13,8 @@ var libnetworking = require("./lib/network");
 var libdomwatch = require("./lib/domwatch");
 var libTabTracker = require("./lib/TabTracker");
 var simple_prefs = require("sdk/simple-prefs");
+
+console.log("*************************** heatmap started");
 
 // Register an update listener
 function onPrefChange(prefName) {
@@ -23,9 +26,9 @@ function onPrefChange(prefName) {
 }
 
 // We only want a single tab tracker instance globally
+console.log("tab tracker is starting up");
 var tabTracker = new libTabTracker.TabTracker();
 libheatmap.main();
-
 simple_prefs.on("black_list", onPrefChange);
 
 exports.onUnload = function (reason) {
