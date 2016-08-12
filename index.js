@@ -5,6 +5,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 console.log("addon is starting");
+var {Cc, Ci, Cu, Cr, Cm, components} = require("chrome");
+Cu.import("resource://gre/modules/Services.jsm");
+
 var pageMod = require("sdk/page-mod");
 var self = require("sdk/self");
 
@@ -25,6 +28,12 @@ function onPrefChange(prefName) {
     libheatmap.updatePrefs(newPrefVal);
 }
 
+simple_prefs.on("deleteData", function() {
+    var DELETE_SERVER_DATA = "delete-server-data";
+    Services.obs.notifyObservers(null, DELETE_SERVER_DATA, {});
+});
+
+
 // We only want a single tab tracker instance globally
 console.log("tab tracker is starting up");
 var tabTracker = new libTabTracker.TabTracker();
@@ -35,15 +44,13 @@ exports.onUnload = function (reason) {
     // Valid reasons are: install, enable, startup, upgrade, downgrade
     //
     console.log("heatmap is unloading because: ["+reason+"]");
-    if (reason == 'uninstall') {
-        // TODO: check this reason and invoke the user delete
-        // operation
+    var unload_reasons = ['disable', 'uninstall'];
 
+    if (unload_reasons.indexOf(reason) >= 0) {
+        // We have to send a message to delete the data because
+        // network requests can't be run in the chrome process.
+        var DELETE_SERVER_DATA = "delete-server-data";
+        Services.obs.notifyObservers(null, DELETE_SERVER_DATA, {});
         return;
     }
-
-    if (reason == 'shutdown') {
-        // TODO: flush everything to disk so we don't lose data
-    }
-
 };
