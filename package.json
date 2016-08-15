@@ -22,5 +22,10 @@
        "title": "Delete all heatmap data from server"}],
   "keywords": [
     "jetpack"
-  ]
+  ],
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "jpm": "^1.0.7",
+    "shield-studies-addon-utils": "shield-studies-addon-utils"
+  }
 }
