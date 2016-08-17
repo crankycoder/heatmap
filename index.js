@@ -27,7 +27,7 @@ function daydiff(first, second) {
     return Math.round((second-first)/(1000*60*60*24));
 }
 
-const STUDY_END_DATE = new Date(2017, 1, 15);
+const STUDY_END_DATE = new Date(2016, 10, 15);
 
 const forSetup = {
   name: require("sdk/self").id, // unique for Telemetry
@@ -82,6 +82,8 @@ function onUnload(reason) {
     if (unload_reasons.indexOf(reason) >= 0) {
         // We have to send a message to delete the data because
         // network requests can't be run in the chrome process.
+
+        // TODO: add a guard for the study end date
         var DELETE_SERVER_DATA = "delete-server-data";
         Services.obs.notifyObservers(null, DELETE_SERVER_DATA, {});
         return;
