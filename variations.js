@@ -11,24 +11,20 @@ let prefSvc = require("sdk/preferences/service");
 const OURPREF = 'extensions.@heatmap.black_list';
 
 const variations = {
-  'strong':  function () {
-    prefSvc.set(OURPREF, 'heatmap');
-  },
-  // "usual treatment" => "control" with a less obvious name
-  'ut':  () => {}
+  'observe_urls':  function() {
+  }
 }
 
 /** is the User Eligible?  Called during INSTALL startups */
-function isEligible () {
-  // boolean : specific to this study:  returns whether or not the application preference name both exists and has been set to a non-default value by the user (or a program acting on the user's behalf).
-  return !prefSvc.isSet(OURPREF);
+function isEligible() {
 }
 
 /** Cleanup to run during uninstall / removal.
   * Should attempt to reset the user to original state
   */
 function cleanup () {
-  // this study had only 1 effect, the pref.
+  // TODO: remove our preference
+  // TODO: remove our local files in the profile directory
   prefSvc.reset(OURPREF);
 }
 
