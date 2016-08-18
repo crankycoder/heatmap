@@ -11,25 +11,37 @@
   },
   "license": "MIT",
   "preferences": [
-      {"name": "black_list",
-       "title": "URL Keyword Blacklist",
-       "description": "Keywords which will be used to filter out URLs.  Multiple keywords can be split by commas",
-       "type": "string",
-       "value": ""},
-      {"type": "control",
-       "label": "Delete",
-       "name": "deleteData",
-       "title": "Delete all heatmap data from server"}],
+    {
+      "name": "black_list",
+      "title": "URL Keyword Blacklist",
+      "description": "Keywords which will be used to filter out URLs.  Multiple keywords can be split by commas",
+      "type": "string",
+      "value": ""
+    },
+    {
+      "type": "control",
+      "label": "Delete",
+      "name": "deleteData",
+      "title": "Delete all heatmap data from server"
+    }
+  ],
   "keywords": [
     "jetpack"
   ],
   "devDependencies": {
+    "addons-linter": "^0.15.1",
     "chai": "^3.5.0",
+    "eslint": "^3.3.1",
     "jpm": "^1.0.7",
     "shield-studies-addon-utils": "^1.2.0"
   },
   "repository": {
-      "type": "git",
-      "url": "git://github.com/mozilla/heatmap.git"
+    "type": "git",
+    "url": "git://github.com/mozilla/heatmap.git"
+  },
+  "scripts": {
+    "compile": "jpm xpi",
+    "addons-linter": "npm run compile; addons-linter --output json --pretty *xpi",
+    "test": "./node_modules/.bin/eslint 'lib/**' 'data/**' && npm addons-linter"
   }
 }
