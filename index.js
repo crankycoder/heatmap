@@ -15,7 +15,6 @@ var self = require("sdk/self");
 
 var libheatmap = require("./lib/heatmap");
 var libnetworking = require("./lib/network");
-var libdomwatch = require("./lib/domwatch");
 var libTabTracker = require("./lib/TabTracker");
 var simple_prefs = require("sdk/simple-prefs");
 
