@@ -1,5 +1,5 @@
 {
-  "title": "Context Graph Data Ingestion: Heatmap",
+  "title": "Context Graph Recommendation Engine Experiment",
   "name": "heatmap",
   "version": "0.0.2",
   "description": "Capture browser events for the Context Graph",
