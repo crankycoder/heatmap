@@ -4,7 +4,7 @@ install:
 xpi: install
 	jpm xpi
 
-lint: install
+lint:
 	node_modules/.bin/eslint 'lib/**' 'data/**'
 
 run:
