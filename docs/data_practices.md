@@ -16,48 +16,20 @@ All raw data for a single user is stored together.
 Here are the practices we have put in place for how we collect and
 handle this data.
 
-Users are given a random ID for the experiment that is not associated
-with any other identifier. It is used to keep a specific user's data
-together on the server and to allow a user to request that their data
-be deleted. That ID will not appear in request logs or anywhere
-associated with an IP address.
+* Users are given a random ID for the experiment that is not associated with any other identifier. It is used to keep a specific user's data together on the server and to allow a user to request that their data be deleted. That ID will not appear in request logs or anywhere associated with an IP address.
 
-As part of the addon process, we will ask participants to provide any
-common usernames they may have. This information will not be sent to
-the server and will only be used within the Firefox client.
+* As part of the addon process, we will ask participants to provide any common usernames they may have. This information will not be sent to the server and will only be used within the Firefox client.
 
-URLs containing one or more of the provided usernames will be sent to
-the server with that username replaced by [USERNAME]. We will use
-these URLs to identify patterns so that we can remove similarly
-identifying URLs from the data set. This helps us further anonymize
-the data for other users who may not have provided this information.
+* URLs containing one or more of the provided usernames will be sent to the server with that username replaced by [USERNAME]. We will use these URLs to identify patterns so that we can remove similarly identifying URLs from the data set. This helps us further anonymize the data for other users who may not have provided this information.
 
-Any URLs containing a basic-auth string will be filtered out by the
-client and not sent to the server.
+* Any URLs containing a basic-auth string will be filtered out by the client and not sent to the server.
 
-URLs belonging to any domain commonly associated with pornographic
-material will be filtered out at the client and not sent to the
-server. Note that domains that have pornographic content along with
-other material will not be filtered.
+* URLs belonging to any domain commonly associated with pornographic material will be filtered out at the client and not sent to the server. Note that domains that have pornographic content along with other material will not be filtered.
 
-Collection of data will stop three months after the study begins. Raw
-data associated with this project will be deleted three months after
-the study ends.
+* Collection of data will stop 12 months after the study begins. Raw data associated with this project will be deleted three months after the study ends.
 
-Users may remove themselves from the collection process after
-initially opting in. This will delete the collected data from the
-server. To opt out, type about:addons into the location bar, and press
-enter. Find Context Graph Experiment in the addons list and click the
-“Remove” button.
+* Users may remove themselves from the collection process after initially opting in. This will delete the collected data from the server. To opt out, type about:addons into the location bar, and press enter. Find Context Graph Experiment in the addons list and click the `Remove` button.
 
-Only a small number of developers will have access to the raw data and
-raw data will remain in a single (virtual) location. Code to generate
-aggregate output will be run through these developers, and they'll
-monitor that code and the resulting output for any potentially
-identifying information. All code run against the collected data will
-be publicly available. 
+* Only a small number of developers will have access to the raw data and raw data will remain in a single (virtual) location. Code to generate aggregate output will be run through these developers, and they'll monitor that code and the resulting output for any potentially identifying information. All code run against the collected data will be publicly available. 
 
-When we release information publicly, we do so to improve our products
-and foster an open web. If we share aggregate information from this
-study we will disclose it in a way that minimizes the risk of being
-re-identified.
+* When we release information publicly, we do so to improve our products and foster an open web. If we share aggregate information from this study we will disclose it in a way that minimizes the risk of being re-identified.
