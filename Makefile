@@ -1,3 +1,5 @@
+JPM_FIREFOX_BINARY=/Applications/FirefoxDeveloperEdition.app/Contents/MacOS/firefox
+
 install:
 	npm install
 
@@ -8,6 +10,6 @@ lint:
 	node_modules/.bin/eslint 'lib/**' 'data/**'
 
 run:
-	jpm -b /Applications/FirefoxDeveloperEdition.app/Contents/MacOS/firefox run
+	jpm run
 
 .PHONY = install
