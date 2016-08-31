@@ -26,7 +26,13 @@ console.log("*************************** heatmap started");
 /* 2. configuration / setup constants for the study.
  *  These are only ones needed, or supported
  */
-// TODO compute days until experiment end
+
+function daydiff(first, second) {
+    return Math.round((second-first)/(1000*60*60*24));
+}
+
+const STUDY_END_DATE = new Date(2016, 10, 15);
+
 const forSetup = {
   name: require("sdk/self").id, // unique for Telemetry
   choices: Object.keys(variationsMod.variations), // names of branches.
@@ -86,6 +92,8 @@ function onUnload(reason) {
     if (unload_reasons.indexOf(reason) >= 0) {
         // We have to send a message to delete the data because
         // network requests can't be run in the chrome process.
+
+        // TODO: add a guard for the study end date
         var DELETE_SERVER_DATA = "delete-server-data";
         Services.obs.notifyObservers(null, DELETE_SERVER_DATA, {});
         return;
