@@ -37,7 +37,7 @@ const forSetup = {
 
 // 3. Study Object (module singleton);
 var ourConfig = xutils.xsetup(forSetup);
-let thisStudy = new xutils.Study(ourConfig,variationsMod);
+let thisStudy = new xutils.Study(ourConfig, variationsMod);
 
 // 3a (optional). Watch for changes and reporting
 xutils.Reporter.on("report",(d)=>console.debug("telemetry", d));
