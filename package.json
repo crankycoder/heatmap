@@ -3,7 +3,7 @@
   "name": "heatmap",
   "version": "0.0.2",
   "description": "Capture browser events for the Context Graph",
-  "main": "index.js",
+  "main": "lib/index.js",
   "author": "",
   "engines": {
     "firefox": ">=38.0a1",
