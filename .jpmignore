@@ -1,0 +1,17 @@
+# allow nothing
+*
+.*
+
+## exceptions
+
+!/package.json
+
+# lib and data
+!/{lib,data}/**
+## but not!
+{lib,data}/**/.DS_Store
+{lib,data}/**/.eslintrc
+
+# node
+
+!/node_modules/shield-studies-addon-utils/**
