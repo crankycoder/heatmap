@@ -26,7 +26,7 @@ handle this data.
 
 * URLs belonging to any domain commonly associated with pornographic material will be filtered out at the client and not sent to the server. Note that domains that have pornographic content along with other material will not be filtered.
 
-* Collection of data will stop 12 months after the study begins. Raw data associated with this project will be deleted three months after the study ends.
+* Collection of data will stop 3 months after the study begins. Raw data associated with this project will be deleted 9 months after the study ends.
 
 * Users may remove themselves from the collection process after initially opting in. This will delete the collected data from the server. To opt out, type about:addons into the location bar, and press enter. Find Context Graph Experiment in the addons list and click the `Remove` button.
 
