@@ -5,9 +5,12 @@ This document describes the set of practices we’ve put in place to
 protect the users of this study. We are excited to see what we can
 build with this project.
 
-Participation is by random selection. For Firefox users who agree to
+A random selection of Firefox users using English localization will
+receive an offer to participate. For Firefox users who agree to
 participate, we begin collecting information about page visits for the
-duration of the study. The data sent from the client to the server
+duration of the study or until the user turns the experiment off.
+
+The data sent from the client to the server
 consists of a URL, an identifier for the tab that contains the URL,
 the time visited, and the amount of time spent on the page. Details on
 the exact format of this data may be found at [github.com/mozilla/heatmap/docs/submit.rst](https://github.com/mozilla/heatmap/blob/master/docs/submit.rst).
