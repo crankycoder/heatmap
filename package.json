@@ -1,7 +1,7 @@
 {
   "title": "Context Graph Experiment",
   "name": "context-graph-history-shield-study",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Capture browser events for the Context Graph",
   "main": "lib/index.js",
   "author": "",
