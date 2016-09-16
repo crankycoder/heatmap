@@ -37,4 +37,4 @@ handle this data.
 
 * Only a small number of developers will have access to the raw data and raw data will remain in a single (virtual) location. Code to generate aggregate output will be run through these developers, and they'll monitor that code and the resulting output for any potentially identifying information. All code run against the collected data will be publicly available. 
 
-* When we release information publicly, we do so to improve our products and foster an open web. If we share aggregate information from this study we will disclose it in a way that minimizes the risk of being re-identified.
+* When we release information publicly, we do so to improve our products and foster an open web. If we share aggregate information from this study we will disclose it in a way that minimizes the risk of study participants being identified.
