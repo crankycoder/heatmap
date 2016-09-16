@@ -19,6 +19,8 @@ All raw data for a single user is stored together.
 Here are the practices we have put in place for how we collect and
 handle this data.
 
+* All user data is encrypted while in transit and while stored on any server accessible from the internet.
+
 * Users are given a random ID for the experiment that is not associated with any other identifier. It is used to keep a specific user's data together on the server and to allow a user to request that their data be deleted. That ID will not appear in request logs or anywhere associated with an IP address.
 
 * As part of the addon process, we will ask participants to provide any common usernames they may have. This information will not be sent to the server and will only be used within the Firefox client.
