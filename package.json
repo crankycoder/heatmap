@@ -42,5 +42,8 @@
     "compile": "jpm xpi",
     "addons-linter": "npm run compile; addons-linter --output json --pretty *xpi",
     "test": "./node_modules/.bin/eslint '{lib,data,test}/**' && npm run addons-linter && jpm test"
+  },
+  "permissions": {
+      "multiprocess": true
   }
 }
