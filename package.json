@@ -27,6 +27,9 @@
   "keywords": [
     "jetpack"
   ],
+  "dependencies": {
+      "fathom-web": "1.1.2"
+  },
   "devDependencies": {
     "addons-linter": "^0.15.1",
     "chai": "^3.5.0",
