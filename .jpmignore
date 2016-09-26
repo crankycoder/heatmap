@@ -14,4 +14,9 @@
 
 # node
 
+# Shield Utilities
 !/node_modules/shield-studies-addon-utils/**
+
+# fathom-web
+!/node_modules/fathom-web/**
+!/node_modules/wu/**
