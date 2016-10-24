@@ -22,6 +22,13 @@
       "label": "Delete",
       "name": "deleteData",
       "title": "Delete all heatmap data from server"
+    },
+    {
+      "name": "root_url",
+      "title": "Root URL of Miracle",
+      "description": "Base URL that the Context Graph experiment will upload data to",
+      "type": "string",
+      "value": "https://miracle.services.mozilla.com/v1"
     }
   ],
   "keywords": [
