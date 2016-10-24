@@ -24,6 +24,13 @@
       "title": "Delete all heatmap data from server"
     },
     {
+      "type": "bool",
+      "label": "Encrypt data before upload",
+      "name": "encryptBlob",
+      "title": "Encrypt data before uploading it to the server.  Only disabled during testing.",
+      "value": true
+    },
+    {
       "name": "root_url",
       "title": "Root URL of Miracle",
       "description": "Base URL that the Context Graph experiment will upload data to",
