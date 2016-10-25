@@ -26,9 +26,16 @@
     {
       "type": "bool",
       "label": "Encrypt data before upload",
-      "name": "encryptBlob",
+      "name": "encrypt_data",
       "title": "Encrypt data before uploading it to the server.  Only disabled during testing.",
       "value": true
+    },
+    {
+      "type": "integer",
+      "label": "Flush size",
+      "name": "flush_size",
+      "title": "Maximum number of items in memory before attempting to flush records out to the network",
+      "value": 10
     },
     {
       "name": "root_url",
